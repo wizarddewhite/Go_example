@@ -41,8 +41,18 @@ func editHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func saveHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Path[len("/save/"):]
+	body := r.FormValue("body")
+	p := &wikipage.Page{Title: title, Body: []byte(body)}
+	fmt.Println("Save page: ", title)
+	p.Save()
+	http.Redirect(w, r, "/view/"+title, http.StatusFound)
+}
+
 func main() {
 	http.HandleFunc("/view/", viewHandler)
 	http.HandleFunc("/edit/", editHandler)
+	http.HandleFunc("/save/", saveHandler)
 	http.ListenAndServe(":8080", nil)
 }
