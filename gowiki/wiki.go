@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 )
 
@@ -30,12 +31,8 @@ func editHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "<h1>Please specify your page name</h1>")
 	} else {
 		fmt.Println("Edit page: ", p.Title)
-		fmt.Fprintf(w, "<h1>Editing %s</h1>"+
-			"<form action=\"/save/%s\" method=\"POST\">"+
-			"<textarea name=\"body\">%s</textarea><br>"+
-			"<input type=\"submit\" value=\"Save\">"+"</form>",
-			p.Title, p.Title, p.Body)
-
+		t, _ := template.ParseFiles("edit.html")
+		t.Execute(w, p)
 	}
 }
 
