@@ -1,9 +1,11 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
+	"regexp"
 )
 
 import (
@@ -19,8 +21,23 @@ func renderTemplate(w http.ResponseWriter, tmpl string, p *wikipage.Page) {
 	}
 }
 
+var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$")
+
+func getTitle(w http.ResponseWriter, r *http.Request) (string, error) {
+	m := validPath.FindStringSubmatch(r.URL.Path)
+	if m == nil {
+		http.NotFound(w, r)
+		return "", errors.New("Invalid Page Title")
+	}
+	return m[2], nil // The title is the second subexpression.
+}
+
 func viewHandler(w http.ResponseWriter, r *http.Request) {
-	title := r.URL.Path[len("/view/"):]
+	title, err := getTitle(w, r)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	fmt.Println("View page: ", title)
 	p, err := wikipage.LoadPage(title)
 	if err != nil {
@@ -32,7 +49,11 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func editHandler(w http.ResponseWriter, r *http.Request) {
-	title := r.URL.Path[len("/edit/"):]
+	title, err := getTitle(w, r)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	p, err := wikipage.LoadPage(title)
 	if err != nil {
 		p = &wikipage.Page{Title: title}
@@ -46,11 +67,15 @@ func editHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func saveHandler(w http.ResponseWriter, r *http.Request) {
-	title := r.URL.Path[len("/save/"):]
+	title, err := getTitle(w, r)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	body := r.FormValue("body")
 	p := &wikipage.Page{Title: title, Body: []byte(body)}
 	fmt.Println("Save page: ", title)
-	err := p.Save()
+	err = p.Save()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
