@@ -10,6 +10,11 @@ import (
 	"github.com/wizarddewhite/Go_example/gowiki/wikipage"
 )
 
+func renderTemplate(w http.ResponseWriter, tmpl string, p *wikipage.Page) {
+	t, _ := template.ParseFiles(tmpl + ".html")
+	t.Execute(w, p)
+}
+
 func viewHandler(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Path[len("/view/"):]
 	fmt.Println("View page: ", title)
@@ -18,8 +23,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "No such page: %s", title)
 		return
 	}
-	t, _ := template.ParseFiles("view.html")
-	t.Execute(w, p)
+	renderTemplate(w, "view", p)
 }
 
 func editHandler(w http.ResponseWriter, r *http.Request) {
@@ -32,8 +36,7 @@ func editHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "<h1>Please specify your page name</h1>")
 	} else {
 		fmt.Println("Edit page: ", p.Title)
-		t, _ := template.ParseFiles("edit.html")
-		t.Execute(w, p)
+		renderTemplate(w, "edit", p)
 	}
 }
 
