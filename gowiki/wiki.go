@@ -20,7 +20,8 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("View page: ", title)
 	p, err := wikipage.LoadPage(title)
 	if err != nil {
-		fmt.Fprintf(w, "No such page: %s", title)
+		fmt.Println("No such page: %s, redirect to /edit/", title)
+		http.Redirect(w, r, "/edit/"+title, http.StatusFound)
 		return
 	}
 	renderTemplate(w, "view", p)
