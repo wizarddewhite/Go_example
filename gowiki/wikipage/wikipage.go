@@ -20,5 +20,5 @@ func LoadPage(title string) (*Page, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Page{Title: filename, Body: body}, nil
+	return &Page{Title: title, Body: body}, nil
 }
